@@ -1,0 +1,106 @@
+version: "3.9"
+
+services:
+
+  # ──────────────────────────────────────────────
+  # Infraestrutura compartilhada
+  # ──────────────────────────────────────────────
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # UI de gerenciamento
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-pedidos:
+    image: postgres:15
+    container_name: postgres-pedidos
+    environment:
+      POSTGRES_DB: pedidos_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-entregas:
+    image: postgres:15
+    container_name: postgres-entregas
+    environment:
+      POSTGRES_DB: entregas_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ──────────────────────────────────────────────
+  # Microsserviços
+  # ──────────────────────────────────────────────
+
+  pedidos:
+    build: ./services/pedidos
+    container_name: pedidos
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres-pedidos:5432/pedidos_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      postgres-pedidos:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  entregas:
+    build: ./services/entregas
+    container_name: entregas
+    ports:
+      - "8002:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres-entregas:5432/entregas_db
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      postgres-entregas:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  rastreamento:
+    build: ./services/rastreamento
+    container_name: rastreamento
+    ports:
+      - "8003:8000"
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  notificacoes:
+    build: ./services/notificacoes
+    container_name: notificacoes
+    ports:
+      - "8004:8000"
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
