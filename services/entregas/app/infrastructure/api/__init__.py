@@ -1,3 +1,1 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/entregas", tags=["entregas"])
+from app.infrastructure.api.entrega_router import router
