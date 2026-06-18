@@ -1,3 +1,1 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/pedidos", tags=["pedidos"])
+from app.infrastructure.api.pedido_router import router
