@@ -1,3 +1,1 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/rastreamento", tags=["rastreamento"])
+from app.infrastructure.api.rastreamento_router import router

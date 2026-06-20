@@ -1,3 +1,1 @@
-from fastapi import APIRouter
-
-router = APIRouter(prefix="/notificacoes", tags=["notificacoes"])
+from app.infrastructure.api.notificacoes_router import router
