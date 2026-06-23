@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 import aio_pika
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.infrastructure.api import router
 from app.infrastructure.database import engine
@@ -23,6 +24,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Serviço de Entregas", version="1.0.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_methods=["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 app.include_router(router)
 
