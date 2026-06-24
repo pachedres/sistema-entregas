@@ -16,10 +16,11 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
+      start_period: 30s
 
   postgres-pedidos:
     image: postgres:15
@@ -58,6 +59,7 @@ services:
   pedidos:
     build: ./services/pedidos
     container_name: pedidos
+    restart: on-failure
     ports:
       - "8001:8000"
     environment:
@@ -72,6 +74,7 @@ services:
   entregas:
     build: ./services/entregas
     container_name: entregas
+    restart: on-failure
     ports:
       - "8002:8000"
     environment:
@@ -86,6 +89,7 @@ services:
   rastreamento:
     build: ./services/rastreamento
     container_name: rastreamento
+    restart: on-failure
     ports:
       - "8003:8000"
     environment:
@@ -97,6 +101,7 @@ services:
   notificacoes:
     build: ./services/notificacoes
     container_name: notificacoes
+    restart: on-failure
     ports:
       - "8004:8000"
     environment:
