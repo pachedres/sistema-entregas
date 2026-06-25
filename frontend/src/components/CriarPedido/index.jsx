@@ -46,18 +46,20 @@ export default function CriarPedidoComponent() {
       <h2>Criar Pedido</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="cliente_nome">Nome do Cliente:</label>
+          <label htmlFor="cliente_nome">Nome do Cliente: </label>
           <input type="text" id="cliente_nome" name="cliente_nome" value={clienteNome} onChange={handleClienteNomeChange} required />
         </div>
         <div className="form-group">
-          <label htmlFor="endereco_entrega">Endereço de Entrega:</label>
+          <label htmlFor="endereco_entrega">Endereço de Entrega: </label>
           <input type="text" id="endereco_entrega" name="endereco_entrega" value={enderecoEntrega} onChange={handleEnderecoEntregaChange} required />
         </div>
         <div className="form-group">
-          <label htmlFor="descricao">Descrição:</label>
+          <label htmlFor="descricao">Descrição: </label>
           <input type="text" id="descricao" name="descricao" value={descricao} onChange={handleDescricaoChange} required />
         </div>
-        <button type="submit" className="btn-primary">Criar Pedido</button>
+        <div className="button-container">
+          <button type="submit" className="btn-primary">Criar Pedido</button>
+        </div>
       </form>
     </div>
   );

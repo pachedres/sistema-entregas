@@ -84,11 +84,9 @@ export default function Entregas() {
         </button>
       </div>
       {showCriarPedidoForm && (
-      <div className="criar-pedido-outter-container">
         <div className="criar-pedido-container">
           {<CriarPedidoComponent />}
         </div>
-      </div>
       )}
 
       {loading && <div className="loading">Carregando entregas...</div>}
