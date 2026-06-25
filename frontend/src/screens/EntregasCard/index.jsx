@@ -83,9 +83,13 @@ export default function Entregas() {
           Criar pedido
         </button>
       </div>
-      <div className="criar-pedido-container">
-        {showCriarPedidoForm && <CriarPedidoComponent />}
+      {showCriarPedidoForm && (
+      <div className="criar-pedido-outter-container">
+        <div className="criar-pedido-container">
+          {<CriarPedidoComponent />}
+        </div>
       </div>
+      )}
 
       {loading && <div className="loading">Carregando entregas...</div>}
       {error && <div className="error">⚠️ {error}</div>}

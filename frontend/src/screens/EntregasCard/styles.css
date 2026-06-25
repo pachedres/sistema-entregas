@@ -106,4 +106,16 @@
   background-color: #f5f7fa;
   border-radius: 8px;
   flex-grow: 1;
+  width: fit-content;
+  padding: 20px;
+}
+
+.criar-pedido-outter-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: fit-content;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 40%
 }
