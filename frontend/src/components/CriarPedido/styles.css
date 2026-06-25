@@ -1,0 +1,91 @@
+.entrega-item {
+  border: 1px solid #eee;
+  padding: 16px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  background: #fafafa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.entrega-item .info {
+  flex: 1;
+}
+
+.entrega-item .info > div {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.status {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status.pendente {
+  background: #ffeaa7;
+  color: #d63031;
+}
+
+.status.em_entrega {
+  background: #74b9ff;
+  color: #0984e3;
+}
+
+.status.entregue {
+  background: #55efc4;
+  color: #00b894;
+}
+
+.entrega-item .actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.entrega-item .actions input {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.entrega-item .actions button {
+  padding: 8px 16px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.btn-iniciar {
+  background: #0984e3;
+  color: white;
+}
+
+.btn-iniciar:hover {
+  background: #2980b9;
+}
+
+.btn-finalizar {
+  background: #00b894;
+  color: white;
+}
+
+.btn-finalizar:hover {
+  background: #27ae60;
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

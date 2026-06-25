@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import EntregaItem from "../../components/EntregaItem";
 import "./styles.css";
+import CriarPedidoComponent from "../../components/CriarPedido";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8002";
 
@@ -8,6 +9,7 @@ export default function Entregas() {
   const [entregas, setEntregas] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showCriarPedidoForm, setShowCriarPedidoForm] = useState(false);
 
   async function fetchEntregas() {
     setLoading(true);
@@ -39,7 +41,9 @@ export default function Entregas() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ entregador_nome: entregadorNome }),
       });
-      if (!res.ok) throw new Error("Falha ao iniciar entrega");
+      if (!res.ok) {
+        throw new Error("Falha ao iniciar entrega");
+      }
       await fetchEntregas();
     } catch (err) {
       alert(err.message);
@@ -51,12 +55,18 @@ export default function Entregas() {
       const res = await fetch(`${API_BASE}/entregas/${entregaId}/finalizar`, {
         method: "PATCH",
       });
-      if (!res.ok) throw new Error("Falha ao finalizar entrega");
+      if (!res.ok) {
+        throw new Error("Falha ao finalizar entrega");
+      }
       await fetchEntregas();
     } catch (err) {
       alert(err.message);
     }
   }
+
+  const renderCriarPedidoForm = () => {
+    setShowCriarPedidoForm((prev) => !prev);
+  };
 
   return (
     <div className="entregas-screen">
@@ -65,10 +75,16 @@ export default function Entregas() {
         <p className="subtitle">Gerenciamento de entregas em tempo real</p>
       </header>
 
-      <div className="controls">
+      <div className="controls-container">
         <button className="btn-primary" onClick={fetchEntregas}>
-          🔄 Atualizar
+          Atualizar
         </button>
+        <button className="btn-primary" onClick={renderCriarPedidoForm}>
+          Criar pedido
+        </button>
+      </div>
+      <div className="criar-pedido-container">
+        {showCriarPedidoForm && <CriarPedidoComponent />}
       </div>
 
       {loading && <div className="loading">Carregando entregas...</div>}
