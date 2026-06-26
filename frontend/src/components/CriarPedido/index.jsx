@@ -13,8 +13,6 @@ export default function CriarPedidoComponent() {
   const API_BASE = "http://localhost:8001";
 
   async function criarPedido(cliente_nome, endereco_entrega, descricao) {
-    console.log("Creating order with:", cliente_nome, endereco_entrega, descricao);
-    console.log("API_BASE:", API_BASE + "/pedidos/");
     try {
       const res = await fetch(`${API_BASE}/pedidos/`, {
         body: JSON.stringify({ cliente_nome, endereco_entrega, descricao }),

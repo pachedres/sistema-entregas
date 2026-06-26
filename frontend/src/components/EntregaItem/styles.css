@@ -10,6 +10,16 @@
   gap: 16px;
 }
 
+.entrega-finalizada {
+  background: #e0f7e9;
+  border-color: #00b894;
+}
+
+.entrega-em-entrega {
+  background: #eaf0b9;
+  border-color: #00b894;
+}
+
 .entrega-item .info {
   flex: 1;
 }

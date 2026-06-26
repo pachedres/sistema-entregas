@@ -5,7 +5,7 @@ export default function EntregaItem({ entrega, onIniciar, onFinalizar }) {
   const [entregador, setEntregador] = useState("");
 
   return (
-    <div className="entrega-item">
+    <div className={`entrega-item ${entrega.status === 'ENTREGUE' ? 'entrega-finalizada' : entrega.status === 'EM_ENTREGA' ? 'entrega-em-entrega' : ''}`}>
       <div className="info">
         <div>
           <strong>Pedido:</strong> {entrega.pedido_id}

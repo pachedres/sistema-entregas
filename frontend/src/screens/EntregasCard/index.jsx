@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import EntregaItem from "../../components/EntregaItem";
 import "./styles.css";
 import CriarPedidoComponent from "../../components/CriarPedido";
+import BuscarPedidoComponent from "../../components/BuscarPedido";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8002";
 
@@ -10,6 +11,7 @@ export default function Entregas() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showCriarPedidoForm, setShowCriarPedidoForm] = useState(false);
+  const [showBuscarPedidoForm, setShowBuscarPedidoForm] = useState(false);
 
   async function fetchEntregas() {
     setLoading(true);
@@ -65,14 +67,19 @@ export default function Entregas() {
   }
 
   const renderCriarPedidoForm = () => {
+    setShowBuscarPedidoForm(false);
     setShowCriarPedidoForm((prev) => !prev);
+  };
+
+  const renderBuscarPedidoForm = () => {
+    setShowCriarPedidoForm(false);
+    setShowBuscarPedidoForm((prev) => !prev);
   };
 
   return (
     <div className="entregas-screen">
       <header className="header">
         <h1>Sistema de Entregas</h1>
-        <p className="subtitle">Gerenciamento de entregas em tempo real</p>
       </header>
 
       <div className="controls-container">
@@ -82,10 +89,18 @@ export default function Entregas() {
         <button className="btn-primary" onClick={renderCriarPedidoForm}>
           Criar pedido
         </button>
+        <button className="btn-primary" onClick={renderBuscarPedidoForm}>
+          Buscar pedido
+        </button>
       </div>
       {showCriarPedidoForm && (
         <div className="criar-pedido-container">
           {<CriarPedidoComponent />}
+        </div>
+      )}
+      {showBuscarPedidoForm && (
+        <div className="criar-pedido-container">
+          {<BuscarPedidoComponent />}
         </div>
       )}
 
