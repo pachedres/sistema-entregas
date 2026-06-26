@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
+from fastapi import Response
 
 from app.application.queries.listar_rastreamento import ListarRastreamentoHandler, ListarRastreamentoQuery
 from app.infrastructure.repository.in_memory_repository import InMemoryRastreamentoRepository
@@ -32,3 +33,12 @@ async def listar_rastreamento(entrega_id: UUID, request: Request):
         )
         for r in registros
     ]
+
+
+@router.api_route("/{entrega_id}", methods=["OPTIONS"])
+async def rastreamento_options(entrega_id: UUID):
+    return Response(status_code=200, headers={
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+    })
