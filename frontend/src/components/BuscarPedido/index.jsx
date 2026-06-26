@@ -70,7 +70,7 @@ const formatDate = (dateString) => {
         {pedido && (
           <div className="pedido-info">
             <h3>Informações do Pedido</h3>
-            <p><strong>ID:</strong> {pedido.id}</p>
+            <p><strong>Pedido ID:</strong> {pedido.id}</p>
             <p><strong>Cliente:</strong> {pedido.cliente_nome}</p>
             <p><strong>Endereço de entrega:</strong> {pedido.endereco_entrega}</p>
             <p><strong>Descrição:</strong> {pedido.descricao}</p>

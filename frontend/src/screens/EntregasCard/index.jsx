@@ -3,6 +3,7 @@ import EntregaItem from "../../components/EntregaItem";
 import "./styles.css";
 import CriarPedidoComponent from "../../components/CriarPedido";
 import BuscarPedidoComponent from "../../components/BuscarPedido";
+import BuscarEntrega from "../../components/BuscarEntrega";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8002";
 
@@ -12,6 +13,7 @@ export default function Entregas() {
   const [error, setError] = useState(null);
   const [showCriarPedidoForm, setShowCriarPedidoForm] = useState(false);
   const [showBuscarPedidoForm, setShowBuscarPedidoForm] = useState(false);
+  const [showBuscarEntregaForm, setShowBuscarEntregaForm] = useState(false);
 
   async function fetchEntregas() {
     setLoading(true);
@@ -68,18 +70,26 @@ export default function Entregas() {
 
   const renderCriarPedidoForm = () => {
     setShowBuscarPedidoForm(false);
+    setShowBuscarEntregaForm(false);
     setShowCriarPedidoForm((prev) => !prev);
   };
 
   const renderBuscarPedidoForm = () => {
     setShowCriarPedidoForm(false);
+    setShowBuscarEntregaForm(false);
     setShowBuscarPedidoForm((prev) => !prev);
+  };
+
+  const renderBuscarEntregaForm = () => {
+    setShowCriarPedidoForm(false);
+    setShowBuscarPedidoForm(false);
+    setShowBuscarEntregaForm((prev) => !prev);
   };
 
   return (
     <div className="entregas-screen">
       <header className="header">
-        <h1>Sistema de Entregas</h1>
+        <h1>Sistema de Entregas e Pedidos</h1>
       </header>
 
       <div className="controls-container">
@@ -92,10 +102,13 @@ export default function Entregas() {
         <button className="btn-primary" onClick={renderBuscarPedidoForm}>
           Buscar pedido
         </button>
+        <button className="btn-primary" onClick={renderBuscarEntregaForm}>
+          Buscar entrega
+        </button>
       </div>
       {showCriarPedidoForm && (
         <div className="criar-pedido-container">
-          {<CriarPedidoComponent />}
+          {<CriarPedidoComponent onPedidoCriado={fetchEntregas} />}
         </div>
       )}
       {showBuscarPedidoForm && (
@@ -103,11 +116,19 @@ export default function Entregas() {
           {<BuscarPedidoComponent />}
         </div>
       )}
+      {showBuscarEntregaForm && (
+        <div className="criar-pedido-container">
+          {<BuscarEntrega />}
+        </div>
+      )}
 
       {loading && <div className="loading">Carregando entregas...</div>}
       {error && <div className="error">⚠️ {error}</div>}
 
       <div className="entregas-list">
+        <header className="header2">
+          <h1>Entregas ativas</h1>
+        </header>
         {entregas.length === 0 && !loading ? (
           <div className="empty-state">
             <p>Nenhuma entrega encontrada.</p>

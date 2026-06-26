@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./styles.css";
 
-export default function CriarPedidoComponent() {
+export default function CriarPedidoComponent({ onPedidoCriado }) {
   const [clienteNome, setClienteNome] = useState("");
   const [enderecoEntrega, setEnderecoEntrega] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -23,12 +23,14 @@ export default function CriarPedidoComponent() {
         setClienteNome("");
         setEnderecoEntrega("");
         setDescricao("");
-        toast.success("Pedido criado com sucesso!");
+        alert("Pedido criado com sucesso!");
+        if (onPedidoCriado) {
+          onPedidoCriado();
+        }
       }
       if (!res.ok) {
         throw new Error("Falha ao criar pedido");
       }
-      await fetchEntregas();
     } catch (err) {
       alert(err.message);
     }
