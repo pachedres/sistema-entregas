@@ -4,6 +4,7 @@ import "./styles.css";
 import CriarPedidoComponent from "../../components/CriarPedido";
 import BuscarPedidoComponent from "../../components/BuscarPedido";
 import BuscarEntrega from "../../components/BuscarEntrega";
+import DashInfo from "../../components/DashInfo";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8002";
 
@@ -88,10 +89,6 @@ export default function Entregas() {
 
   return (
     <div className="entregas-screen">
-      <header className="header">
-        <h1>Sistema de Entregas e Pedidos</h1>
-      </header>
-
       <div className="controls-container">
         <button className="btn-primary" onClick={fetchEntregas}>
           Atualizar
@@ -124,6 +121,12 @@ export default function Entregas() {
 
       {loading && <div className="loading">Carregando entregas...</div>}
       {error && <div className="error">⚠️ {error}</div>}
+
+      <DashInfo
+        aguardando={entregas.filter((e) => e.status === "AGUARDANDO").length}
+        emEntrega={entregas.filter((e) => e.status === "EM_ENTREGA").length}
+        entregue={entregas.filter((e) => e.status === "ENTREGUE").length}
+      />
 
       <div className="entregas-list">
         <header className="header2">

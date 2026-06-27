@@ -1,0 +1,81 @@
+.dash-info-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    width: auto;
+    min-height: 220px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.dash-info-title {
+    text-align: center;
+    font-size: 24px;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.dash-info-items-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    width: 100%;
+    max-width: 760px;
+    gap: 32px;
+}
+
+.dash-info-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 14px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    min-width: 160px;
+    margin: 0;
+    text-align: center;
+}
+
+.dash-info-item-center {
+    margin-left: 160px;
+    margin-right: 160px;
+}
+
+.waiting {
+    font-size: 28px;
+    font-weight: bold;
+    color: #817171;
+}
+
+.in-progress {
+    font-size: 28px;
+    font-weight: bold;
+    color: #a1b300;
+    margin-bottom: 8px;
+}
+
+.completed {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2ecc71;
+    margin-bottom: 8px;
+}
+
+.item-aguardando-entregador {
+  background-color: #eeeeee;
+}
+
+.item-em-entrega {
+  background: #ffeaa7;
+}
+
+.item-entregue {
+  background: #a0fac2;
+}
