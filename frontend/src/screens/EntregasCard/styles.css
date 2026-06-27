@@ -48,6 +48,18 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.btn-simulation {
+  padding: 12px 24px;
+  background: #4da13d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .btn-primary:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
 }
@@ -106,6 +118,52 @@
   justify-content: center;
   gap: 12px;
   margin-bottom: 20px;
+}
+
+.simulation-panel {
+  max-width: 900px;
+  margin: 0 auto 20px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.simulation-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.simulation-input-group label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.simulation-input-group input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.simulation-log {
+  max-width: 900px;
+  margin: 0 auto 20px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  white-space: pre-wrap;
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 14px;
+  color: #3b3b3b;
 }
 
 .criar-pedido-container {

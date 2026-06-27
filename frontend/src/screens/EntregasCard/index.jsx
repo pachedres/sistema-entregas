@@ -5,8 +5,17 @@ import CriarPedidoComponent from "../../components/CriarPedido";
 import BuscarPedidoComponent from "../../components/BuscarPedido";
 import BuscarEntrega from "../../components/BuscarEntrega";
 import DashInfo from "../../components/DashInfo";
+import {
+  randomNames,
+  randomAddresses,
+  randomDescriptions,
+  randomDeliverers,
+} from "./RandomData";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8002";
+const PEDIDOS_API_BASE = import.meta.env.VITE_API_PEDIDOS_BASE || "http://localhost:8001";
+const SIMULATION_MIN_DELAY_MS = 5000;
+const SIMULATION_MAX_DELAY_MS = 10000;
 
 export default function Entregas() {
   const [entregas, setEntregas] = useState([]);
@@ -15,6 +24,10 @@ export default function Entregas() {
   const [showCriarPedidoForm, setShowCriarPedidoForm] = useState(false);
   const [showBuscarPedidoForm, setShowBuscarPedidoForm] = useState(false);
   const [showBuscarEntregaForm, setShowBuscarEntregaForm] = useState(false);
+  const [simulationCount, setSimulationCount] = useState(10);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [simulationLog, setSimulationLog] = useState("");
+  const [showSimulationLog, setShowSimulationLog] = useState(false);
 
   async function fetchEntregas() {
     setLoading(true);
@@ -23,11 +36,167 @@ export default function Entregas() {
       const res = await fetch(`${API_BASE}/entregas/`);
       if (!res.ok) throw new Error("Erro ao buscar entregas");
       const data = await res.json();
+      data.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
       setEntregas(data);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
+    }
+  }
+
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+  const getRandomDelay = () =>
+    Math.floor(
+      SIMULATION_MIN_DELAY_MS +
+        Math.random() * (SIMULATION_MAX_DELAY_MS - SIMULATION_MIN_DELAY_MS)
+    );
+
+  const randomItem = (items) =>
+    items[Math.floor(Math.random() * items.length)];
+
+  async function createPedido(pedidoData) {
+    const res = await fetch(`${PEDIDOS_API_BASE}/pedidos/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(pedidoData),
+    });
+    if (!res.ok) {
+      throw new Error("Falha ao criar pedido");
+    }
+    return await res.json();
+  }
+
+  async function refreshEntregas() {
+    try {
+      const res = await fetch(`${API_BASE}/entregas/`);
+      if (!res.ok) throw new Error("Falha ao buscar entregas");
+      const data = await res.json();
+      data.sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+      setEntregas(data);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function waitForEntregaByPedidoId(pedidoId, attempts = 20) {
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      const res = await fetch(`${API_BASE}/entregas/`);
+      if (!res.ok) {
+        throw new Error("Falha ao buscar entregas para rastrear");
+      } 
+      const data = await res.json();
+      const entrega = data.find((item) => item.pedido_id === pedidoId);
+      if (entrega) {
+        return entrega;
+      }
+      await sleep(3000);
+    }
+    throw new Error("Entrega não encontrada para o pedido");
+  }
+
+  async function iniciarEntrega(entregaId, entregadorNome) {
+    const res = await fetch(`${API_BASE}/entregas/${entregaId}/iniciar`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ entregador_nome: entregadorNome }),
+    });
+    if (!res.ok) {
+      throw new Error("Falha ao iniciar entrega");
+    }
+    return await res.json();
+  }
+
+  async function finalizarEntrega(entregaId) {
+    const res = await fetch(`${API_BASE}/entregas/${entregaId}/finalizar`, {
+      method: "PATCH",
+    });
+    if (!res.ok) {
+      throw new Error("Falha ao finalizar entrega");
+    }
+    return await res.json();
+  }
+
+  async function simulatePedido(index) {
+    try {
+      const delayBeforeCreate = getRandomDelay();
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Aguardando ${Math.round(
+          delayBeforeCreate / 1000
+        )}s antes de criar o pedido...`
+      );
+      await sleep(delayBeforeCreate);
+
+      const pedidoData = {
+        cliente_nome: randomItem(randomNames),
+        endereco_entrega: randomItem(randomAddresses),
+        descricao: randomItem(randomDescriptions),
+      };
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Criando pedido para ${pedidoData.cliente_nome}`
+      );
+      const pedido = await createPedido(pedidoData);
+      await refreshEntregas();
+
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Pedido criado: ${pedido.id}`
+      );
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Buscando entrega para o pedido ${pedido.id}`
+      );
+      const entrega = await waitForEntregaByPedidoId(pedido.id);
+
+      const delayBeforeStart = getRandomDelay();
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Aguardando ${Math.round(
+          delayBeforeStart / 1000
+        )}s antes de iniciar a entrega...`
+      );
+      await sleep(delayBeforeStart);
+
+      const entregador = randomItem(randomDeliverers);
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Iniciando entrega ${entrega.id} com ${entregador}`
+      );
+      await iniciarEntrega(entrega.id, entregador);
+      await refreshEntregas();
+
+      const delayBeforeFinish = getRandomDelay();
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Aguardando ${Math.round(
+          delayBeforeFinish / 1000
+        )}s antes de finalizar a entrega...`
+      );
+      await sleep(delayBeforeFinish);
+
+      setSimulationLog((prev) =>
+        `${prev}\n[${index}/${simulationCount}] Finalizando entrega ${entrega.id}`
+      );
+      await finalizarEntrega(entrega.id);
+      await refreshEntregas();
+    } catch (err) {
+      setError(err.message);
+      setSimulationLog((prev) => `${prev}\n[${index}/${simulationCount}] Erro: ${err.message}`);
+    }
+  }
+
+  async function runSimulation() {
+    setIsSimulating(true);
+    setError(null);
+    setSimulationLog("Iniciando simulação...\n");
+    try {
+      const tasks = Array.from({ length: simulationCount }, (_, idx) =>
+        simulatePedido(idx + 1)
+      );
+      await Promise.all(tasks);
+      setSimulationLog((prev) => `${prev}\nSimulação finalizada`);
+    } catch (err) {
+      setError(err.message);
+      setSimulationLog((prev) => `${prev}\nErro global: ${err.message}`);
+    } finally {
+      setIsSimulating(false);
+      await fetchEntregas();
     }
   }
 
@@ -68,6 +237,10 @@ export default function Entregas() {
       alert(err.message);
     }
   }
+
+  const toggleLog = () => {
+    setShowSimulationLog((prev) => !prev);
+  };
 
   const renderCriarPedidoForm = () => {
     setShowBuscarPedidoForm(false);
@@ -119,6 +292,43 @@ export default function Entregas() {
         </div>
       )}
 
+      <div className="simulation-panel">
+        <div className="simulation-input-group">
+          <label htmlFor="simulationCount">Pedidos na simulação</label>
+          <input
+            id="simulationCount"
+            type="number"
+            min="1"
+            value={simulationCount}
+            onChange={(event) =>
+              setSimulationCount(Number(event.target.value) || 1)
+            }
+            disabled={isSimulating}
+          />
+        </div>
+        <button
+          className="btn-simulation"
+          type="button"
+          onClick={runSimulation}
+          disabled={isSimulating}
+        >
+          {isSimulating ? "Simulação em andamento..." : "Iniciar simulação"}
+        </button>
+        <button
+          className="btn-primary"
+          type="button"
+          onClick={toggleLog}
+          disabled={!simulationLog}
+        >
+          {showSimulationLog ? "Ocultar log" : "Log de eventos"}
+        </button>
+      </div>
+      {showSimulationLog && simulationLog && (
+        <div className="simulation-log">
+          <h3>Log de eventos da simulação:</h3>
+          <pre>{simulationLog}</pre>
+        </div>
+      )}
       {loading && <div className="loading">Carregando entregas...</div>}
       {error && <div className="error">⚠️ {error}</div>}
 
