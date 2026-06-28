@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EntregaItem from "../../components/EntregaItem";
 import "./styles.css";
 import CriarPedidoComponent from "../../components/CriarPedido";
@@ -28,6 +28,11 @@ export default function Entregas() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [simulationLog, setSimulationLog] = useState("");
   const [showSimulationLog, setShowSimulationLog] = useState(false);
+  const [continuousSimulationCount, setContinuousSimulationCount] = useState(10);
+  const [isContinuousSimulationRunning, setIsContinuousSimulationRunning] = useState(false);
+  const [continuousSimulationLog, setContinuousSimulationLog] = useState("");
+  const [showContinuousSimulationLog, setShowContinuousSimulationLog] = useState(false);
+  const isContinuousSimulationRef = useRef(false);
 
   async function fetchEntregas() {
     setLoading(true);
@@ -200,8 +205,128 @@ export default function Entregas() {
     }
   }
 
+  async function runContinuousSimulation() {
+    if (isContinuousSimulationRunning) {
+      isContinuousSimulationRef.current = false;
+      setIsContinuousSimulationRunning(false);
+      setContinuousSimulationLog((prev) => `${prev}\nSimulação contínua interrompida.`);
+      return;
+    }
+
+    const pedidosPorSegundo = Math.max(1, Number(continuousSimulationCount) || 1);
+    setIsContinuousSimulationRunning(true);
+    isContinuousSimulationRef.current = true;
+    setError(null);
+    setContinuousSimulationLog(`Iniciando simulação contínua com ${pedidosPorSegundo} pedidos por segundo...\n`);
+    setShowContinuousSimulationLog(true);
+
+    try {
+      let batchNumber = 1;
+      while (isContinuousSimulationRef.current) {
+        const batchStart = Date.now();
+        const batchLogPrefix = `[Lote ${batchNumber}]`;
+        setContinuousSimulationLog((prev) => `${prev}\n${batchLogPrefix} Processando ${pedidosPorSegundo} pedidos simultâneos...`);
+
+        const batchTasks = Array.from({ length: pedidosPorSegundo }, (_, idx) =>
+          (async () => {
+            const cycleIndex = idx + 1;
+            const delayBeforeCreate = getRandomDelay();
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Aguardando ${Math.round(
+                delayBeforeCreate / 1000
+              )}s antes de criar...`
+            );
+            await sleep(delayBeforeCreate);
+
+            if (!isContinuousSimulationRef.current) {
+              return;
+            }
+
+            const pedidoData = {
+              cliente_nome: randomItem(randomNames),
+              endereco_entrega: randomItem(randomAddresses),
+              descricao: randomItem(randomDescriptions),
+            };
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Criando pedido para ${pedidoData.cliente_nome}`
+            );
+            const pedido = await createPedido(pedidoData);
+            await refreshEntregas();
+
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Pedido criado: ${pedido.id}`
+            );
+            const entrega = await waitForEntregaByPedidoId(pedido.id);
+
+            const delayBeforeStart = getRandomDelay();
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Aguardando ${Math.round(
+                delayBeforeStart / 1000
+              )}s antes de iniciar...`
+            );
+            await sleep(delayBeforeStart);
+
+            if (!isContinuousSimulationRef.current) {
+              return;
+            }
+
+            const entregador = randomItem(randomDeliverers);
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Iniciando entrega ${entrega.id} com ${entregador}`
+            );
+            await iniciarEntrega(entrega.id, entregador);
+            await refreshEntregas();
+
+            const delayBeforeFinish = getRandomDelay();
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Aguardando ${Math.round(
+                delayBeforeFinish / 1000
+              )}s antes de finalizar...`
+            );
+            await sleep(delayBeforeFinish);
+
+            if (!isContinuousSimulationRef.current) {
+              return;
+            }
+
+            setContinuousSimulationLog((prev) =>
+              `${prev}\n${batchLogPrefix} [Pedido ${cycleIndex}] Finalizando entrega ${entrega.id}`
+            );
+            await finalizarEntrega(entrega.id);
+            await refreshEntregas();
+          })()
+        );
+
+        await Promise.all(batchTasks);
+        batchNumber += 1;
+        const elapsed = Date.now() - batchStart;
+        const baseDelayMs = 200;
+        const jitterMs = Math.floor(Math.random() * 400) + 200;
+        const nextDelay = Math.max(400, baseDelayMs + jitterMs - elapsed);
+        if (!isContinuousSimulationRef.current) {
+          break;
+        }
+        setContinuousSimulationLog((prev) => `${prev}\n${batchLogPrefix} Lote concluído. Próximo lote em ${Math.round(nextDelay / 1000)}s.`);
+        await sleep(nextDelay);
+      }
+    } catch (err) {
+      setError(err.message);
+      setContinuousSimulationLog((prev) => `${prev}\nErro na simulação contínua: ${err.message}`);
+    } finally {
+      if (!isContinuousSimulationRef.current) {
+        setContinuousSimulationLog((prev) => `${prev}\nSimulação contínua interrompida.`);
+      }
+      isContinuousSimulationRef.current = false;
+      setIsContinuousSimulationRunning(false);
+      await fetchEntregas();
+    }
+  }
+
   useEffect(() => {
     fetchEntregas();
+    return () => {
+      isContinuousSimulationRef.current = false;
+    };
   }, []);
 
   async function iniciar(entregaId, entregadorNome) {
@@ -240,6 +365,10 @@ export default function Entregas() {
 
   const toggleLog = () => {
     setShowSimulationLog((prev) => !prev);
+  };
+
+  const toggleContinuousLog = () => {
+    setShowContinuousSimulationLog((prev) => !prev);
   };
 
   const renderCriarPedidoForm = () => {
@@ -310,7 +439,7 @@ export default function Entregas() {
           className="btn-simulation"
           type="button"
           onClick={runSimulation}
-          disabled={isSimulating}
+          disabled={isSimulating || isContinuousSimulationRunning}
         >
           {isSimulating ? "Simulação em andamento..." : "Iniciar simulação"}
         </button>
@@ -327,6 +456,46 @@ export default function Entregas() {
         <div className="simulation-log">
           <h3>Log de eventos da simulação:</h3>
           <pre>{simulationLog}</pre>
+        </div>
+      )}
+
+      <div className="simulation-panel">
+        <div className="simulation-input-group">
+          <label htmlFor="continuousSimulationCount">Pedidos da simulação contínua</label>
+          <input
+            id="continuousSimulationCount"
+            type="number"
+            min="1"
+            value={continuousSimulationCount}
+            onChange={(event) =>
+              setContinuousSimulationCount(Number(event.target.value) || 1)
+            }
+            disabled={isContinuousSimulationRunning || isSimulating}
+          />
+        </div>
+        <button
+          className="btn-simulation"
+          type="button"
+          onClick={runContinuousSimulation}
+          disabled={isSimulating}
+        >
+          {isContinuousSimulationRunning
+            ? "Parar simulação contínua"
+            : "Iniciar simulação contínua"}
+        </button>
+        <button
+          className="btn-primary"
+          type="button"
+          onClick={toggleContinuousLog}
+          disabled={!continuousSimulationLog}
+        >
+          {showContinuousSimulationLog ? "Ocultar log contínuo" : "Log contínuo"}
+        </button>
+      </div>
+      {showContinuousSimulationLog && continuousSimulationLog && (
+        <div className="simulation-log">
+          <h3>Log de eventos da simulação contínua:</h3>
+          <pre>{continuousSimulationLog}</pre>
         </div>
       )}
       {loading && <div className="loading">Carregando entregas...</div>}

@@ -76,6 +76,7 @@ npm run dev
 ### 5. Acessar a aplicação
 
 - Frontend: http://localhost:5173
+- Documentação dos serviços:
 - Swagger do serviço de pedidos: http://localhost:8001/docs
 - Swagger do serviço de entregas: http://localhost:8002/docs
 - Swagger do serviço de rastreamento: http://localhost:8003/docs
@@ -112,9 +113,3 @@ npm run dev
 ### Notificações
 
 - GET /notificacoes/
-
-## Observações
-
-- O frontend consome os endpoints de pedidos e entregas usando as variáveis VITE_API_PEDIDOS_BASE e VITE_API_BASE.
-- Se os serviços estiverem em outra porta ou host, ajuste o arquivo frontend/.env e reinicie o Vite.
-- A simulação de pedidos e entregas é uma funcionalidade demonstrativa da interface, mas depende dos microsserviços estarem em execução.
