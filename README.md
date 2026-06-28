@@ -1,15 +1,39 @@
 # Sistema de Entregas
 
-Este projeto contém um sistema de entregas com microsserviços em Python e um frontend em React + Vite.
+Este projeto implementa um exemplo de arquitetura orientada a microsserviços para gestão de pedidos e entregas, com um frontend em React + Vite e serviços backend em Python com FastAPI.
+
+## Funcionalidades atuais
+
+A aplicação possui os seguintes fluxos:
+
+- Criar pedidos a partir do frontend ou via API
+- Listar e buscar pedidos por ID
+- Gerar entregas automaticamente a partir de pedidos criados
+- Listar e buscar entregas por ID
+- Iniciar e finalizar entregas
+- Simular múltiplos pedidos e entregas em sequência
+- Exibir uma interface com cards de entregas e painel de informações
+
+## Arquitetura
+
+O sistema é composto por:
+
+- Frontend em React/Vite
+- Serviço de pedidos em FastAPI
+- Serviço de entregas em FastAPI
+- Serviço de rastreamento em FastAPI
+- Serviço de notificações em FastAPI
+- RabbitMQ para eventos assíncronos
+- PostgreSQL para persistência de pedidos e entregas
 
 ## Pré-requisitos
 
-- Docker Desktop instalado e em execução
+- Docker Desktop em execução
 - Node.js e npm instalados
 
-## Passo a passo para iniciar
+## Como executar
 
-### 1. Iniciar os serviços com Docker Desktop
+### 1. Subir os microsserviços
 
 No diretório raiz do projeto, execute:
 
@@ -19,21 +43,21 @@ docker-compose up --build
 
 Isso irá iniciar:
 
-- RabbitMQ (`http://localhost:15672`)
-- Postgres para `pedidos` (`5432`) e `entregas` (`5433`)
-- Serviço de pedidos em `http://localhost:8001`
-- Serviço de entregas em `http://localhost:8002`
-- Serviço de rastreamento em `http://localhost:8003`
-- Serviço de notificações em `http://localhost:8004`
-
-> Aguarde até que os containers estejam prontos antes de abrir o frontend.
+- RabbitMQ em http://localhost:15672
+- PostgreSQL para pedidos na porta 5432
+- PostgreSQL para entregas na porta 5433
+- Serviço de pedidos em http://localhost:8001
+- Serviço de entregas em http://localhost:8002
+- Serviço de rastreamento em http://localhost:8003
+- Serviço de notificações em http://localhost:8004
 
 ### 2. Configurar o frontend
 
-No diretório `frontend`, verifique o arquivo `.env` e confirme que ele aponta para o backend de entregas:
+No diretório frontend, crie ou ajuste o arquivo .env com as URLs dos serviços:
 
 ```env
 VITE_API_BASE=http://localhost:8002
+VITE_API_PEDIDOS_BASE=http://localhost:8001
 ```
 
 ### 3. Instalar dependências do frontend
@@ -43,92 +67,54 @@ cd frontend
 npm install
 ```
 
-### 4. Executar o frontend
+### 4. Rodar o frontend
 
 ```bash
 npm run dev
 ```
 
-### 5. Abrir o sistema no navegador
+### 5. Acessar a aplicação
 
-- Frontend: `http://localhost:5173`
-- API de entregas: `http://localhost:8002/entregas/`
-- RabbitMQ UI: `http://localhost:15672`
-- Documentação do serviço de entregas: `http://localhost:8002/docs`
-- Documentação do serviço de pedidos: `http://localhost:8001/docs`
+- Frontend: http://localhost:5173
+- Swagger do serviço de pedidos: http://localhost:8001/docs
+- Swagger do serviço de entregas: http://localhost:8002/docs
+- Swagger do serviço de rastreamento: http://localhost:8003/docs
+- Swagger do serviço de notificações: http://localhost:8004/docs
 
-## Como criar uma entrega via Swagger/OpenAPI
+## Fluxo principal de uso
 
-As entregas são criadas indiretamente quando um pedido é criado. Siga os passos abaixo:
+1. Acesse a interface no frontend.
+2. Crie um pedido pelo formulário disponível.
+3. O sistema gera automaticamente uma entrega associada ao pedido.
+4. Na lista de entregas, você pode iniciar e finalizar o processo.
+5. Também é possível buscar pedidos e entregas por ID diretamente pela interface.
 
-### Passo 1: Criar um pedido
+## Endpoints principais
 
-1. Acesse `http://localhost:8001/docs` (Swagger do serviço de pedidos)
-2. Clique em **POST /pedidos/**
-3. Clique em **Try it out**
-4. Preencha o JSON com os dados do pedido:
+### Pedidos
 
-```json
-{
-  "cliente_nome": "João Silva",
-  "endereco_entrega": "Rua das Flores, 123",
-  "descricao": "Entrega de remédio"
-}
-```
+- POST /pedidos/
+- GET /pedidos/
+- GET /pedidos/{pedido_id}
+- PATCH /pedidos/{pedido_id}/status
 
-5. Clique em **Execute**
-6. O servidor irá retornar um pedido com um `id`. Guarde esse ID.
+### Entregas
 
-### Passo 2: Visualizar a entrega criada
+- GET /entregas/
+- GET /entregas/{entrega_id}
+- PATCH /entregas/{entrega_id}/iniciar
+- PATCH /entregas/{entrega_id}/finalizar
 
-1. Acesse `http://localhost:8002/docs` (Swagger do serviço de entregas)
-2. Clique em **GET /entregas/**
-3. Clique em **Try it out**
-4. Clique em **Execute**
+### Rastreamento
 
-Você verá a lista de entregas, incluindo a que foi criada automaticamente pelo pedido.
+- GET /rastreamento/{entrega_id}
 
-### Passo 3: Gerenciar a entrega
+### Notificações
 
-No Swagger de entregas (`http://localhost:8002/docs`), você verá os seguintes endpoints:
-
-#### GET /entregas/
-- **Função**: Listar todas as entregas
-- **Como usar**: Clique em **Try it out** → **Execute**
-- **Retorno**: Lista de todas as entregas com ID, status, entregador, etc.
-
-#### GET /entregas/{entrega_id}
-- **Função**: Buscar uma entrega específica pelo ID
-- **Como usar**: 
-  1. Clique em **Try it out**
-  2. Insira o `entrega_id` (UUID da entrega)
-  3. Clique em **Execute**
-- **Retorno**: Dados completos da entrega
-
-#### PATCH /entregas/{entrega_id}/iniciar
-- **Função**: Iniciar uma entrega (registrar o entregador)
-- **Como usar**:
-  1. Clique em **Try it out**
-  2. Insira o `entrega_id`
-  3. No campo de corpo (JSON), preencha:
-     ```json
-     {
-       "entregador_nome": "João Silva"
-     }
-     ```
-  4. Clique em **Execute**
-- **Retorno**: Entrega com status `em_entrega` e nome do entregador
-
-#### PATCH /entregas/{entrega_id}/finalizar
-- **Função**: Finalizar uma entrega
-- **Como usar**:
-  1. Clique em **Try it out**
-  2. Insira o `entrega_id`
-  3. Clique em **Execute**
-- **Retorno**: Entrega com status `entregue`
+- GET /notificacoes/
 
 ## Observações
 
-- O frontend consome os endpoints do backend usando a variável `VITE_API_BASE`.
-- Se o backend estiver em outra porta ou host, ajuste `frontend/.env` e reinicie o Vite.
-- Atualmente o frontend roda localmente com Vite; o Docker Compose inicia apenas os serviços de backend.
+- O frontend consome os endpoints de pedidos e entregas usando as variáveis VITE_API_PEDIDOS_BASE e VITE_API_BASE.
+- Se os serviços estiverem em outra porta ou host, ajuste o arquivo frontend/.env e reinicie o Vite.
+- A simulação de pedidos e entregas é uma funcionalidade demonstrativa da interface, mas depende dos microsserviços estarem em execução.
