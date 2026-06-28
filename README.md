@@ -112,9 +112,3 @@ npm run dev
 ### Notificações
 
 - GET /notificacoes/
-
-## Observações
-
-- O frontend consome os endpoints de pedidos e entregas usando as variáveis VITE_API_PEDIDOS_BASE e VITE_API_BASE.
-- Se os serviços estiverem em outra porta ou host, ajuste o arquivo frontend/.env e reinicie o Vite.
-- A simulação de pedidos e entregas é uma funcionalidade demonstrativa da interface, mas depende dos microsserviços estarem em execução.
