@@ -5,6 +5,7 @@ export default function BuscarEntregaComponent() {
   const [entregaId, setEntregaId] = useState("");
   const [entrega, setEntrega] = useState(null);
   const [rastreamento, setRastreamento] = useState([]);
+  const [eventos, setEventos] = useState([]);
 
   const handleEntregaIdChange = (e) => {
       setEntregaId(e.target.value);
@@ -12,6 +13,7 @@ export default function BuscarEntregaComponent() {
   
   const API_BASE = "http://localhost:8002";
   const API_RASTREAMENTO = "http://localhost:8003";
+  const API_NOTIFICACAO = "http://localhost:8004";
 
   const buscarEntrega = async (entrega_id) => {
     try {
@@ -23,6 +25,22 @@ export default function BuscarEntregaComponent() {
     } catch (err) {
       alert(err.message);
       return null;
+    }
+  };
+
+  const buscarNotificacoes = async (pedidoId) => {
+    try {
+      const url = pedidoId
+        ? `${API_NOTIFICACAO}/notificacoes/?pedido_id=${pedidoId}`
+        : `${API_NOTIFICACAO}/notificacoes/`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error("Falha ao buscar notificações");
+      }
+      return await res.json();
+    } catch (err) {
+      alert(err.message);
+      return [];
     }
   };
 
@@ -44,9 +62,49 @@ export default function BuscarEntregaComponent() {
 
     const data = await buscarEntrega(entregaId);
     setEntrega(data);
-    
-    const rastreamentoData = await buscarRastreamento(entregaId);
-    setRastreamento(Array.isArray(rastreamentoData) ? rastreamentoData : []);
+
+    const [rastreamentoData, notificacoesData] = await Promise.all([
+      buscarRastreamento(entregaId),
+      buscarNotificacoes(data?.pedido_id),
+    ]);
+
+    const rastreamentoLista = Array.isArray(rastreamentoData) ? rastreamentoData : [];
+    const notificacoesLista = Array.isArray(notificacoesData) ? notificacoesData : [];
+
+    const eventosMapa = new Map();
+
+    const adicionarEvento = (item, tipo) => {
+      const nomeEvento = (item.evento_origem || item.evento || "Evento").toLowerCase();
+      const hora = item.enviada_em || item.registrado_em;
+      const chave = `${nomeEvento}|${new Date(hora).toISOString().slice(0, 19)}`;
+
+      if (!eventosMapa.has(chave)) {
+        eventosMapa.set(chave, {
+          tipo: tipo === "notificacao" ? "notificacao" : "evento",
+          titulo: item.evento_origem || item.evento || "Evento",
+          mensagem: tipo === "notificacao" ? item.mensagem || "Sem mensagem" : item.evento || "Evento",
+          hora,
+        });
+        return;
+      }
+
+      const existente = eventosMapa.get(chave);
+      if (tipo === "notificacao") {
+        existente.tipo = "evento+notificacao";
+        existente.mensagem = item.mensagem || existente.mensagem;
+        existente.titulo = item.evento_origem || existente.titulo;
+      }
+    };
+
+    rastreamentoLista.forEach((item) => adicionarEvento(item, "rastreamento"));
+    notificacoesLista.forEach((item) => adicionarEvento(item, "notificacao"));
+
+    const eventosCombinados = Array.from(eventosMapa.values()).sort(
+      (a, b) => new Date(b.hora) - new Date(a.hora)
+    );
+
+    setRastreamento(rastreamentoLista);
+    setEventos(eventosCombinados);
   };
   
 const formatDate = (dateString) => {
@@ -64,8 +122,6 @@ const formatDate = (dateString) => {
     hour12: false,
   });
 };
-  console.log(rastreamento);
-
   return (
     <div className="criar-pedido">
       <h2>Buscar Entrega</h2>
@@ -89,17 +145,18 @@ const formatDate = (dateString) => {
             <p><strong>Criado em:</strong> {formatDate(entrega.criado_em)}</p>
           </div>
         )}
-        {rastreamento.length > 0 && (
+        {eventos.length > 0 && (
           <div className="rastreamento-info">
-            <h3>Rastreamento da Entrega</h3>
-              {rastreamento.map((item, index) => (
-                <div key={index} className="rastreamento-item">
-                  <p key={index}>
-                    <strong>Evento:</strong> {item.evento || "N/A"} <br />
-                    <strong>Atualizado em:</strong> {formatDate(item.registrado_em)}
-                  </p>
-                </div>
-              ))}
+            <h3>Eventos disparados</h3>
+            {eventos.map((item, index) => (
+              <div key={`${item.tipo}-${index}`} className="rastreamento-item">
+                <p className="info-item">
+                  <strong>Evento:</strong> {item.titulo} <br />
+                  <strong>Mensagem:</strong> {item.mensagem} <br />
+                  <strong>Hora:</strong> {formatDate(item.hora)}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>

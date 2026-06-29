@@ -1,7 +1,7 @@
 export const randomNames = [
   "Lucas Silva",
   "Mariana Costa",
-  "Gabriel Souza",
+  "Manuel Gomes",
   "Ana Pereira",
   "Carlos Santos",
   "Fernanda Lima",

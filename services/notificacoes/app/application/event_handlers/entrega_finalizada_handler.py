@@ -10,6 +10,7 @@ class EntregaFinalizadaHandler:
             destinatario="cliente",
             mensagem="Seu pedido foi entregue! Obrigado por usar nosso sistema.",
             evento_origem="EntregaFinalizada",
+            pedido_id=dados.get("pedido_id"),
         )
         self._store.append(notificacao)
         print(f"[notificacoes] NOTIFICAÇÃO → {notificacao.destinatario}: {notificacao.mensagem}")

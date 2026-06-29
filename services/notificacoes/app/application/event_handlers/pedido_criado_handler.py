@@ -10,6 +10,7 @@ class PedidoCriadoHandler:
             destinatario=dados["cliente_nome"],
             mensagem=f"Seu pedido foi recebido e está sendo processado. Endereço: {dados['endereco_entrega']}",
             evento_origem="PedidoCriado",
+            pedido_id=dados.get("id"),
         )
         self._store.append(notificacao)
         print(f"[notificacoes] NOTIFICAÇÃO → {notificacao.destinatario}: {notificacao.mensagem}")
