@@ -4,9 +4,9 @@ Este projeto implementa um exemplo de arquitetura orientada a microsserviços pa
 
 ## Funcionalidades atuais
 
-A aplicação possui os seguintes fluxos:
+A aplicação permite:
 
-- Criar pedidos a partir do frontend ou via API
+- Criar pedidos pela interface ou via API
 - Listar e buscar pedidos por ID
 - Gerar entregas automaticamente a partir de pedidos criados
 - Listar e buscar entregas por ID
@@ -23,7 +23,7 @@ O sistema é composto por:
 - Serviço de entregas em FastAPI
 - Serviço de rastreamento em FastAPI
 - Serviço de notificações em FastAPI
-- RabbitMQ para eventos assíncronos
+- RabbitMQ para comunicação assíncrona entre serviços
 - PostgreSQL para persistência de pedidos e entregas
 
 ## Pré-requisitos
@@ -53,7 +53,7 @@ Isso irá iniciar:
 
 ### 2. Configurar o frontend
 
-No diretório frontend, crie ou ajuste o arquivo .env com as URLs dos serviços:
+No diretório frontend, você pode criar um arquivo .env para sobrescrever as URLs padrão dos serviços, se necessário:
 
 ```env
 VITE_API_BASE=http://localhost:8002
