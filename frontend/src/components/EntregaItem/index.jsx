@@ -14,7 +14,7 @@ export default function EntregaItem({ entrega, onIniciar, onFinalizar }) {
       try {
         const [rastreamentoRes, notificacoesRes] = await Promise.all([
           fetch(`${API_RASTREAMENTO_BASE}/rastreamento/${entrega.id}`),
-          fetch(`${API_NOTIFICACOES_BASE}/notificacoes/`),
+          fetch(`${API_NOTIFICACOES_BASE}/notificacoes/?pedido_id=${entrega.pedido_id}`),
         ]);
 
         if (rastreamentoRes.ok) {
@@ -32,7 +32,9 @@ export default function EntregaItem({ entrega, onIniciar, onFinalizar }) {
         if (notificacoesRes.ok) {
           const notificacoes = await notificacoesRes.json();
           if (Array.isArray(notificacoes) && notificacoes.length > 0) {
-            const ultima = notificacoes[notificacoes.length - 1];
+            const ultima = [...notificacoes].sort(
+              (a, b) => new Date(b.enviada_em) - new Date(a.enviada_em)
+            )[0];
             setUltimaNotificacao(ultima?.mensagem || "Nenhuma notificação registrada");
           } else {
             setUltimaNotificacao("Nenhuma notificação registrada");
@@ -46,7 +48,7 @@ export default function EntregaItem({ entrega, onIniciar, onFinalizar }) {
     };
 
     carregarResumo();
-  }, [entrega.id]);
+  }, [entrega.id, entrega.status]);
 
   console.log("EntregaItem - entrega:", entrega);
 
