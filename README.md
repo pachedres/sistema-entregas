@@ -112,4 +112,4 @@ npm run dev
 
 ### Notificações
 
-- GET /notificacoes/
+- GET /notificacoes/{entrega_id}
